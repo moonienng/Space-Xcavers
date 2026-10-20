@@ -2,10 +2,11 @@
 Trabalho da matéria "PI: Desenvolvimento de Sistemas Orientados a Objetos".  Desenvolvimento de uma réplica de "Space Invaders" (jogo de Atari) em Java. 
 
 ##Integrantes
-Gabriela Andrade
 
-Lawrencio Cecchinato Vituli
+**Gabriella Andrade**
 
-Valentina Serrano Ruiz
+**Lawrencio Cecchinato Vituli**
 
-Victório Eugênio Gayão
+**Valentina Serrano Ruiz**
+
+**Victório Eugênio Gayão**
