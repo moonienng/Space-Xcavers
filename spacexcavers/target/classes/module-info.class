@@ -1,0 +1,9 @@
+module com.juridico {
+   requires javafx.controls;
+   requires javafx.fxml;
+
+   exports com.juridico;
+
+   opens com.juridico to
+      javafx.fxml;
+}
