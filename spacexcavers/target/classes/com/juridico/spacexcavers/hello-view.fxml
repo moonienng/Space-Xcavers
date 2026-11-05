@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
-
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
+<?import javafx.scene.layout.Pane?>
+<Pane fx:id="gamePane" prefHeight="500.0" prefWidth="800.0"
+      style="-fx-background-color: #111827;" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.juridico.spacexcavers.HelloController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-    </padding>
-
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
-</VBox>
+    <Label layoutX="20.0" layoutY="20.0" text="A / D para movimentar"
+           textFill="WHITE"/>
+</Pane>
