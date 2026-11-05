@@ -1,7 +1,9 @@
-module com.juridico {
+module com.juridico.spacexcavers {
     requires javafx.controls;
     requires javafx.fxml;
 
-    opens com.juridico to javafx.fxml;
-    exports com.juridico;
+    requires com.almasb.fxgl.all;
+
+    opens com.juridico.spacexcavers to javafx.fxml;
+    exports com.juridico.spacexcavers;
 }
