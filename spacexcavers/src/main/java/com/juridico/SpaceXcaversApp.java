@@ -20,13 +20,13 @@ public class SpaceXcaversApp extends GameApplication {
 
     public enum Type
     {
-        PLAYER, INIMIGO, BULLET
+        JOGADOR, INIMIGO, BULLET
     }
 
     @Override
     protected void initSettings(GameSettings settings) {
-        settings.setWidth(600);
-        settings.setHeight(600);
+        settings.setWidth(224);
+        settings.setHeight(256);
         settings.setTitle("SpaceXcavers");
         settings.setVersion("0.1");
         settings.setIntroEnabled(false);
@@ -38,7 +38,10 @@ public class SpaceXcaversApp extends GameApplication {
     @Override
     protected void initInput() 
     {
-       
+       FXGL.onKey(KeyCode.A, () -> jogador.translateX(-3));
+       FXGL.onKey(KeyCode.D, () -> jogador.translateX(3));
+       FXGL.onKey(KeyCode.LEFT, () -> jogador.translateX(-3));
+       FXGL.onKey(KeyCode.RIGHT, () -> jogador.translateX(3));
     }
 
     @Override
@@ -50,13 +53,14 @@ public class SpaceXcaversApp extends GameApplication {
 
     @Override
     protected void initGame() {
-        for(int x = 0; x<5 ; x++)
+        for(int x = 0; x<11 ; x++)
         {
-            for(int y = 0; y<8; y++)
+            for(int y = 0; y<5; y++)
             {
-                    spawnInimigo(x * 40 + 10,y * 40 + 10);
+                    spawnInimigo(x * 16,y * 8);
             }
         }
+        spawnJogador(89.5,195);
     }
 
     @Override
@@ -65,8 +69,8 @@ public class SpaceXcaversApp extends GameApplication {
     }
     private void spawnInimigo(double x, double y) {
     Texture texture = getAssetLoader().loadTexture("estrela.gif");
-    texture.setFitWidth(40);
-    texture.setFitHeight(40);
+    texture.setFitWidth(15);
+    texture.setFitHeight(17);
 
     entityBuilder()
             .type(Type.INIMIGO)
@@ -75,6 +79,21 @@ public class SpaceXcaversApp extends GameApplication {
             .with(new CollidableComponent(true))
             .buildAndAttach();
 }
+    private Entity jogador;
+
+    private void spawnJogador(double x, double y)
+    {
+        Texture texture = getAssetLoader().loadTexture("PinguimMC.gif");
+    texture.setFitWidth(45);
+    texture.setFitHeight(51);
+
+    jogador = entityBuilder()
+            .type(Type.JOGADOR)
+            .at(x, y)
+            .view(texture)
+            .with(new CollidableComponent(true))
+            .buildAndAttach();
+    }
     public static void main(String[] args) {
         launch(args);
     }
