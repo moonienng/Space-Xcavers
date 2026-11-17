@@ -31,8 +31,8 @@ public class SpaceXcaversApp extends GameApplication {
 
     @Override
     protected void initSettings(GameSettings settings) {
-        settings.setWidth(224);
-        settings.setHeight(256);
+        settings.setWidth(600);
+        settings.setHeight(600);
         settings.setTitle("SpaceXcavers");
         settings.setVersion("0.1");
         settings.setIntroEnabled(false);
