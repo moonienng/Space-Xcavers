@@ -77,6 +77,7 @@ public class SpaceXcaversApp extends GameApplication {
             .at(x, y)
             .view(texture)
             .with(new CollidableComponent(true))
+            .with(new InimigoMovimentacao())
             .buildAndAttach();
 }
     private Entity jogador;
