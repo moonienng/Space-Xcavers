@@ -1,32 +1,28 @@
 package com.juridico;
+
 import static com.almasb.fxgl.dsl.FXGL.*;
 
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
-
-import com.almasb.fxgl.entity.components.CollidableComponent;
-import com.almasb.fxgl.texture.Texture;
-
+import com.almasb.fxgl.entity.SpawnData;
+import com.almasb.fxgl.physics.CollisionHandler;
+import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
-import java.util.Map;
+import javafx.util.Duration;
+import com.juridico.Entidades.Type;
 
+import java.util.List;
+import java.util.Map;
 
 public class SpaceXcaversApp extends GameApplication {
 
-    public enum Type
-    {
-        JOGADOR, INIMIGO, BULLET
-    }
-
     @Override
     protected void initSettings(GameSettings settings) {
-        settings.setWidth(224);
-        settings.setHeight(256);
+        settings.setWidth(600);
+        settings.setHeight(600);
         settings.setTitle("SpaceXcavers");
         settings.setVersion("0.1");
         settings.setIntroEnabled(false);
@@ -36,65 +32,91 @@ public class SpaceXcaversApp extends GameApplication {
     }
 
     @Override
-    protected void initInput() 
-    {
-       FXGL.onKey(KeyCode.A, () -> jogador.translateX(-3));
-       FXGL.onKey(KeyCode.D, () -> jogador.translateX(3));
-       FXGL.onKey(KeyCode.LEFT, () -> jogador.translateX(-3));
-       FXGL.onKey(KeyCode.RIGHT, () -> jogador.translateX(3));
+    protected void initInput() {
+        FXGL.onKey(KeyCode.A, () -> moverJogador(-3));
+        FXGL.onKey(KeyCode.D, () -> moverJogador(3));
+        FXGL.onKey(KeyCode.LEFT, () -> moverJogador(-3));
+        FXGL.onKey(KeyCode.RIGHT, () -> moverJogador(3));
+
+        FXGL.onKeyDown(KeyCode.SPACE, () -> {
+            Entity jogador = getGameWorld().getSingleton(Type.JOGADOR);
+            Point2D centro = jogador.getCenter();
+            spawn("tiroJogador", new SpawnData(centro.getX(), centro.getY())
+                    .put("dir", new Point2D(0, -1)));
+        });
+    }
+
+    private void moverJogador(double dx) {
+        Entity jogador = getGameWorld().getSingleton(Type.JOGADOR);
+        double maxX = getAppWidth() - jogador.getWidth();
+        double novoX = Math.max(0, Math.min(jogador.getX() + dx, maxX));
+        jogador.setX(novoX);
     }
 
     @Override
     protected void initGameVars(Map<String, Object> vars) 
     {
-        vars.put("pixelsMoved", 0);
+        vars.put("vidas", 3);
+        vars.put("fim", false);
     }
-
 
     @Override
     protected void initGame() {
-        for(int x = 0; x<11 ; x++)
-        {
-            for(int y = 0; y<5; y++)
-            {
-                    spawnInimigo(x * 16,y * 8);
+        getGameWorld().addEntityFactory(new Entidades());
+
+        for (int x = 0; x < 11; x++) {
+    for (int y = 0; y < 5; y++) {
+        spawn("inimigo", new SpawnData(25 + x * 50, 60 + y * 45));
+    }
+}
+
+        spawn("jogador", new SpawnData(getAppWidth() / 2.0 - 22, getAppHeight() - 80));
+
+        // A cada 1 segundo, um inimigo vivo escolhido ao acaso atira
+        getGameTimer().runAtInterval(() -> {
+            List<Entity> inimigos = getGameWorld().getEntitiesByType(Type.INIMIGO);
+            if (inimigos.isEmpty()) return;
+
+            Entity atirador = inimigos.get(random(0, inimigos.size() - 1));
+            Point2D centro = atirador.getCenter();
+            spawn("tiroInimigo", new SpawnData(centro.getX(), centro.getY())
+                    .put("dir", new Point2D(0, 1)));
+        }, Duration.seconds(1));
+    }
+
+    @Override
+    protected void initPhysics() {
+        // Tiro do jogador atinge inimigo
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.TIRO_BOM, Type.INIMIGO) {
+            @Override
+            protected void onCollisionBegin(Entity tiro, Entity inimigo) {
+                tiro.removeFromWorld();
+                inimigo.removeFromWorld();
             }
+        });
+
+        // Tiro do inimigo atinge jogador
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.TIRO_BOM, Type.INIMIGO) {
+    @Override
+    protected void onCollisionBegin(Entity tiro, Entity inimigo) {
+        tiro.removeFromWorld();
+        inimigo.removeFromWorld();
+
+        if (!getb("fim") && getGameWorld().getEntitiesByType(Type.INIMIGO).isEmpty()) {
+            set("fim", true);
+            getDialogService().showMessageBox("Você venceu!", () -> getGameController().startNewGame());
         }
-        spawnJogador(89.5,195);
+    }
+});
     }
 
     @Override
     protected void initUI() {
-        
-    }
-    private void spawnInimigo(double x, double y) {
-    Texture texture = getAssetLoader().loadTexture("estrela.gif");
-    texture.setFitWidth(15);
-    texture.setFitHeight(17);
-
-    entityBuilder()
-            .type(Type.INIMIGO)
-            .at(x, y)
-            .view(texture)
-            .with(new CollidableComponent(true))
-            .with(new InimigoMovimentacao())
-            .buildAndAttach();
+    Text textoVidas = getUIFactoryService().newText("", 24);
+    textoVidas.textProperty().bind(getip("vidas").asString("Vidas: %d"));
+    addUINode(textoVidas, 20, 40);
 }
-    private Entity jogador;
 
-    private void spawnJogador(double x, double y)
-    {
-        Texture texture = getAssetLoader().loadTexture("PinguimMC.gif");
-    texture.setFitWidth(45);
-    texture.setFitHeight(51);
-
-    jogador = entityBuilder()
-            .type(Type.JOGADOR)
-            .at(x, y)
-            .view(texture)
-            .with(new CollidableComponent(true))
-            .buildAndAttach();
-    }
     public static void main(String[] args) {
         launch(args);
     }
