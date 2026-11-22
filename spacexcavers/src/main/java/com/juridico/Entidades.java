@@ -9,6 +9,9 @@ import com.almasb.fxgl.texture.Texture;
 import javafx.geometry.Point2D;
 
 import static com.almasb.fxgl.dsl.FXGL.*;
+import com.almasb.fxgl.physics.BoundingShape;
+import com.almasb.fxgl.physics.HitBox;
+
 public class Entidades implements EntityFactory
 {
     public enum Type {
@@ -18,21 +21,24 @@ public class Entidades implements EntityFactory
     @Spawns("jogador")
     public Entity spawnJogador(SpawnData data) {
         Texture texture = getAssetLoader().loadTexture("PinguimMC.gif");
-        texture.setFitWidth(50);
-        texture.setFitHeight(50);
+        texture.setFitWidth(100);
+        texture.setFitHeight(100);
+
+        HitBox hitbox = new HitBox(new Point2D(30, 25), BoundingShape.box(40, 55));
 
         return entityBuilder(data)
                 .type(Type.JOGADOR)
-                .viewWithBBox(texture)
+                .view(texture)
+                .bbox(hitbox)
                 .collidable()
                 .build();
     }
 
     @Spawns("inimigo")
     public Entity spawnInimigo(SpawnData data) {
-        Texture texture = getAssetLoader().loadTexture("estrela.gif");
-        texture.setFitWidth(36);
-        texture.setFitHeight(36);
+        Texture texture = getAssetLoader().loadTexture("drones2.gif");
+        texture.setFitWidth(65);
+        texture.setFitHeight(65);
 
         return entityBuilder(data)
                 .type(Type.INIMIGO)
@@ -53,10 +59,27 @@ public class Entidades implements EntityFactory
     }
 
     private Entity criarTiro(SpawnData data, Type Type) {
-        Texture texture = getAssetLoader().loadTexture("Pikareta5FPS.gif");
-        texture.setFitWidth(10);
-        texture.setFitHeight(24);
+        String imagem = switch (Type) {
+            case TIRO_BOM -> "Pikareta10FPS.gif";
+            case TIRO_RUIM -> "TiroInimigo.gif";
+            default -> throw new IllegalArgumentException("Tipo sem textura: " + Type);
+        };
+
+        Texture texture = getAssetLoader().loadTexture(imagem);
+        texture.setFitWidth(35);
+        texture.setFitHeight(55);
         Point2D direcao = data.get("dir");
+
+        if (Type == Type.TIRO_RUIM) {
+            texture.setRotate(-90);
+        }
+
+        double hitL = (Type == Type.TIRO_RUIM) ? 8 : 20;
+        double hitA = (Type == Type.TIRO_RUIM) ? 14 : 30;
+
+        HitBox hitbox = new HitBox(
+                new Point2D((45 - hitL) / 2, (55 - hitA) / 2),   // centralizando na imagem
+                BoundingShape.box(hitL, hitA));
 
         return entityBuilder(data)
                 .type(Type)

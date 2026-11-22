@@ -4,12 +4,22 @@ import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
 
 import static com.almasb.fxgl.dsl.FXGL.getAppWidth;
+import static com.almasb.fxgl.dsl.FXGL.getEngineTimer;
 
 public class InimigoMovimentacao extends Component {
 
+    private final double ALTURA_CHAO = 450;
+
     private final double velocidadeX = 35;   
     private final double passoDescida = 8;   
-    private int direcao = 1;    
+    private int direcao = 1;
+    private int direcaoVertical = 1;
+    private double yInicial;
+
+    @Override
+    public void onAdded(){
+        yInicial = getEntity().getY();
+    }
 
     @Override
     public void onUpdate(double tpf) {
@@ -31,6 +41,14 @@ public class InimigoMovimentacao extends Component {
 
     private void virar() {
         direcao = -direcao;
-        getEntity().translateY(passoDescida);
+        getEntity().translateY(direcaoVertical * passoDescida);
+
+        double base = getEntity().getY() + getEntity().getHeight();
+
+        if(base >= ALTURA_CHAO){
+            direcaoVertical = -1;
+        } else if (getEntity().getY() <= yInicial) {
+            direcaoVertical = 1;
+        }
     }
 }
