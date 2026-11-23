@@ -7,6 +7,7 @@ import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.app.scene.FXGLMenu;
 import com.almasb.fxgl.app.scene.MenuType;
 import com.almasb.fxgl.app.scene.SceneFactory;
+import com.almasb.fxgl.core.math.FXGLMath;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.SpawnData;
@@ -48,15 +49,28 @@ public class SpaceXcaversApp extends GameApplication {
 
     @Override
     protected void initInput() {
-        FXGL.onKey(KeyCode.A, () -> moverJogador(-3));
-        FXGL.onKey(KeyCode.D, () -> moverJogador(3));
-        FXGL.onKey(KeyCode.LEFT, () -> moverJogador(-3));
-        FXGL.onKey(KeyCode.RIGHT, () -> moverJogador(3));
+        FXGL.onKey(KeyCode.A, () ->{
+            int andar = getb("veloJ") ? -1 : -3;
+            moverJogador(andar);
+        });
+        FXGL.onKey(KeyCode.D, () -> {
+            int andar = getb("veloJ") ? 1 : 3;
+            moverJogador(andar);
+        });
+        FXGL.onKey(KeyCode.LEFT, () -> {
+            int andar = getb("veloJ") ? -1 : -3;
+            moverJogador(andar);
+        });
+        FXGL.onKey(KeyCode.RIGHT, () -> {
+            int andar = getb("veloJ") ? 1 : 3;
+            moverJogador(andar);
+        });
 
         FXGL.onKeyDown(KeyCode.SPACE, () -> {
             Entity jogador = getGameWorld().getSingleton(Type.JOGADOR);
             Point2D centro = jogador.getCenter();
-            spawn("tiroJogador", new SpawnData(centro.getX(), centro.getY())
+            String tipoTiro = getb("tirosTipo") ? "tiroMega" : "tiroJogador";
+            spawn(tipoTiro, new SpawnData(centro.getX(), centro.getY())
                     .put("dir", new Point2D(0, -1)));
         });
     }
@@ -72,6 +86,9 @@ public class SpaceXcaversApp extends GameApplication {
     protected void initGameVars(Map<String, Object> vars) {
         vars.put("vidas", 3);
         vars.put("fim", false);
+        vars.put("pontos", 0);
+        vars.put("tirosTipo", false);
+        vars.put("veloJ", false);
     }
 
     @Override
@@ -93,7 +110,7 @@ public class SpaceXcaversApp extends GameApplication {
 
         spawn("jogador", new SpawnData(getAppWidth() / 2.0 - 22, getAppHeight() - 80));
 
-        // A cada 1 segundo, um inimigo vivo escolhido ao acaso atira
+        // A cada 0,5\ segundo, um inimigo vivo escolhido ao acaso atira
         getGameTimer().runAtInterval(() -> {
             List<Entity> inimigos = getGameWorld().getEntitiesByType(Type.INIMIGO);
             if (inimigos.isEmpty())
@@ -103,7 +120,23 @@ public class SpaceXcaversApp extends GameApplication {
             Point2D centro = atirador.getCenter();
             spawn("tiroInimigo", new SpawnData(centro.getX(), centro.getY())
                     .put("dir", new Point2D(0, 1)));
-        }, Duration.seconds(1));
+        }, Duration.seconds(0.5));
+
+        getGameTimer().runAtInterval(() ->{
+            spawn("estrela", new SpawnData(-100, 0));
+
+        }, Duration.seconds(FXGLMath.random(10,15)));
+    }
+
+    private void fimJogo (String result){
+
+        getDialogService().showConfirmationBox(result +"\n\nJogar de Novo?", answer -> {
+            if (answer) {
+                getGameController().startNewGame();
+            } else {
+                getGameController().exit();
+            }
+        });
     }
 
     @Override
@@ -115,13 +148,33 @@ public class SpaceXcaversApp extends GameApplication {
                 tiro.removeFromWorld();
                 inimigo.removeFromWorld();
 
+                inc("pontos", 1);
+
                 for (Entity restoInimigos : getGameWorld().getEntitiesByType(Type.INIMIGO)) {
                     restoInimigos.getComponent(InimigoMovimentacao.class).aumentarVelocidade();
                 }
 
                 if (!getb("fim") && getGameWorld().getEntitiesByType(Type.INIMIGO).isEmpty()) {
                     set("fim", true);
-                    getDialogService().showMessageBox("Você venceu!", () -> getGameController().startNewGame());
+                    fimJogo("Você Ganhou!");
+                }
+            }
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.TIRO_MEGA, Type.INIMIGO) {
+            @Override
+            protected void onCollisionBegin(Entity tiro, Entity inimigo) {
+                inimigo.removeFromWorld();
+
+                inc("pontos", 1);
+
+                for (Entity restoInimigos : getGameWorld().getEntitiesByType(Type.INIMIGO)) {
+                    restoInimigos.getComponent(InimigoMovimentacao.class).aumentarVelocidade();
+                }
+
+                if (!getb("fim") && getGameWorld().getEntitiesByType(Type.INIMIGO).isEmpty()) {
+                    set("fim", true);
+                    fimJogo("Você Ganhou!");
                 }
             }
         });
@@ -139,9 +192,39 @@ public class SpaceXcaversApp extends GameApplication {
                 inc("vidas", -1);
                 if (geti("vidas") <= 0) {
                     set("fim", true);
-                    getDialogService().showMessageBox("Você perdeu ):", () -> getGameController().startNewGame());
+                    fimJogo("Você Perdeu ):");
                 }
 
+            }
+        });
+
+        //Tiro jogador com entrela
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.ESTRELA, Type.TIRO_BOM) {
+
+            @Override
+            protected void onCollisionBegin(Entity estrela, Entity tiro){
+
+                tiro.removeFromWorld();
+
+                Point2D centro = estrela.getCenter();
+                spawn("estrelaCadente", new SpawnData(centro.getX(), centro.getY())
+                        .put("dir", new Point2D(0, 1)));
+
+                estrela.removeFromWorld();
+            }
+
+        });
+
+        //Usuario pega estrela cadente
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.ESTRELA_CADENTE, Type.JOGADOR) {
+
+            @Override
+            protected void onCollisionBegin(Entity EC, Entity jogador){
+                EC.removeFromWorld();
+                set("tirosTipo", true);
+                runOnce(()-> set("tirosTipo", false), Duration.seconds(5));
+                set("veloJ", true);
+                runOnce(()-> set("veloJ", false), Duration.seconds(5));
             }
         });
     }
@@ -151,6 +234,10 @@ public class SpaceXcaversApp extends GameApplication {
         Text textoVidas = getUIFactoryService().newText("", 24);
         textoVidas.textProperty().bind(getip("vidas").asString("Vidas: %d"));
         addUINode(textoVidas, 20, 40);
+
+        Text textoPontos = getUIFactoryService().newText("", 24);
+        textoPontos.textProperty().bind(getip("pontos").asString("Pontuação: %d"));
+        addUINode(textoPontos, 420, 40);
     }
 
     public static void main(String[] args) {

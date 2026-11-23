@@ -15,7 +15,7 @@ import com.almasb.fxgl.physics.HitBox;
 public class Entidades implements EntityFactory
 {
     public enum Type {
-        JOGADOR, INIMIGO, TIRO_BOM, TIRO_RUIM;
+        JOGADOR, INIMIGO, TIRO_BOM, TIRO_RUIM, ESTRELA, ESTRELA_CADENTE, TIRO_MEGA
     }    
 
     @Spawns("jogador")
@@ -48,6 +48,36 @@ public class Entidades implements EntityFactory
                 .build();
     }
 
+    @Spawns("estrela")
+    public Entity spawnEstrela(SpawnData data){
+        Texture texture = getAssetLoader().loadTexture("estrela.gif");
+        texture.setFitWidth(65);
+        texture.setFitHeight(65);
+
+        return entityBuilder(data)
+                .type(Type.ESTRELA)
+                .viewWithBBox(texture)
+                .collidable()
+                .with(new EstrelaMovimenta())
+                .build();
+    }
+
+    @Spawns("estrelaCadente")
+    public Entity spawnEstrelaC(SpawnData data){
+        Texture texture = getAssetLoader().loadTexture("estrela.gif");
+        texture.setFitWidth(40);
+        texture.setFitHeight(40);
+
+        Point2D direcao = data.get("dir");
+        return entityBuilder(data)
+                .type(Type.ESTRELA_CADENTE)
+                .viewWithBBox(texture)
+                .with(new ProjectileComponent(direcao, 150)) // px/s; 50 era muito lento
+                .with(new OffscreenCleanComponent())
+                .collidable()
+                .build();
+    }
+
     @Spawns("tiroJogador")
     public Entity spawnTiroJogador(SpawnData data) {
         return criarTiro(data, Type.TIRO_BOM);
@@ -58,17 +88,28 @@ public class Entidades implements EntityFactory
         return criarTiro(data, Type.TIRO_RUIM);
     }
 
+    @Spawns("tiroMega")
+    public Entity spawnsTiroMega(SpawnData data){return criarTiro(data, Type.TIRO_MEGA);}
+
     private Entity criarTiro(SpawnData data, Type Type) {
         String imagem = switch (Type) {
             case TIRO_BOM -> "Pikareta10FPS.gif";
             case TIRO_RUIM -> "TiroInimigo.gif";
+            case TIRO_MEGA -> "Pikareta5FPS.gif";
             default -> throw new IllegalArgumentException("Tipo sem textura: " + Type);
         };
 
         Texture texture = getAssetLoader().loadTexture(imagem);
-        texture.setFitWidth(35);
-        texture.setFitHeight(55);
         Point2D direcao = data.get("dir");
+
+        if (Type == Type.TIRO_MEGA){
+            texture.setFitWidth(70);
+            texture.setFitHeight(90);
+        }else{
+            texture.setFitWidth(35);
+            texture.setFitHeight(55);
+
+        }
 
         if (Type == Type.TIRO_RUIM) {
             texture.setRotate(-90);
