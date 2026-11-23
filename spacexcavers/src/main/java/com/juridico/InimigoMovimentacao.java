@@ -9,15 +9,15 @@ import static com.almasb.fxgl.dsl.FXGL.getEngineTimer;
 public class InimigoMovimentacao extends Component {
 
     private final double ALTURA_CHAO = 450;
+    private final double passoDescida = 8;
 
-    private final double velocidadeX = 35;   
-    private final double passoDescida = 8;   
+    private double velocidadeX = 35;
     private int direcao = 1;
     private int direcaoVertical = 1;
     private double yInicial;
 
     @Override
-    public void onAdded(){
+    public void onAdded() {
         yInicial = getEntity().getY();
     }
 
@@ -45,10 +45,18 @@ public class InimigoMovimentacao extends Component {
 
         double base = getEntity().getY() + getEntity().getHeight();
 
-        if(base >= ALTURA_CHAO){
+        if (base >= ALTURA_CHAO) {
             direcaoVertical = -1;
         } else if (getEntity().getY() <= yInicial) {
             direcaoVertical = 1;
+        }
+    }
+
+    public void aumentarVelocidade() {
+        velocidadeX += 5;
+
+        if (velocidadeX > 100) {
+            velocidadeX = 100;
         }
     }
 }
