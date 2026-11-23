@@ -31,14 +31,14 @@ public class SpaceXcaversApp extends GameApplication {
         settings.setVersion("0.1");
         settings.setIntroEnabled(false);
         settings.setMainMenuEnabled(true);
-        settings.setSceneFactory(new SceneFactory(){
+        settings.setSceneFactory(new SceneFactory() {
             @Override
-            public FXGLMenu newMainMenu(){
+            public FXGLMenu newMainMenu() {
                 return new NovoMenu(MenuType.MAIN_MENU);
             }
 
             @Override
-            public FXGLMenu newGameMenu(){
+            public FXGLMenu newGameMenu() {
                 return new NovoMenu(MenuType.GAME_MENU);
             }
         });
@@ -69,8 +69,7 @@ public class SpaceXcaversApp extends GameApplication {
     }
 
     @Override
-    protected void initGameVars(Map<String, Object> vars)
-    {
+    protected void initGameVars(Map<String, Object> vars) {
         vars.put("vidas", 3);
         vars.put("fim", false);
     }
@@ -89,15 +88,16 @@ public class SpaceXcaversApp extends GameApplication {
         for (int x = 0; x < 9; x++) {
             for (int y = 0; y < 5; y++) {
                 spawn("inimigo", new SpawnData(25 + x * 50, 60 + y * 45));
-    }
-}
+            }
+        }
 
         spawn("jogador", new SpawnData(getAppWidth() / 2.0 - 22, getAppHeight() - 80));
 
         // A cada 1 segundo, um inimigo vivo escolhido ao acaso atira
         getGameTimer().runAtInterval(() -> {
             List<Entity> inimigos = getGameWorld().getEntitiesByType(Type.INIMIGO);
-            if (inimigos.isEmpty()) return;
+            if (inimigos.isEmpty())
+                return;
 
             Entity atirador = inimigos.get(random(0, inimigos.size() - 1));
             Point2D centro = atirador.getCenter();
@@ -115,6 +115,10 @@ public class SpaceXcaversApp extends GameApplication {
                 tiro.removeFromWorld();
                 inimigo.removeFromWorld();
 
+                for (Entity restoInimigos : getGameWorld().getEntitiesByType(Type.INIMIGO)) {
+                    restoInimigos.getComponent(InimigoMovimentacao.class).aumentarVelocidade();
+                }
+
                 if (!getb("fim") && getGameWorld().getEntitiesByType(Type.INIMIGO).isEmpty()) {
                     set("fim", true);
                     getDialogService().showMessageBox("Você venceu!", () -> getGameController().startNewGame());
@@ -129,10 +133,11 @@ public class SpaceXcaversApp extends GameApplication {
 
                 tiro.removeFromWorld();
 
-                if(getb("fim")) return;
+                if (getb("fim"))
+                    return;
 
                 inc("vidas", -1);
-                if(geti("vidas")<=0){
+                if (geti("vidas") <= 0) {
                     set("fim", true);
                     getDialogService().showMessageBox("Você perdeu ):", () -> getGameController().startNewGame());
                 }
@@ -143,10 +148,10 @@ public class SpaceXcaversApp extends GameApplication {
 
     @Override
     protected void initUI() {
-    Text textoVidas = getUIFactoryService().newText("", 24);
-    textoVidas.textProperty().bind(getip("vidas").asString("Vidas: %d"));
-    addUINode(textoVidas, 20, 40);
-}
+        Text textoVidas = getUIFactoryService().newText("", 24);
+        textoVidas.textProperty().bind(getip("vidas").asString("Vidas: %d"));
+        addUINode(textoVidas, 20, 40);
+    }
 
     public static void main(String[] args) {
         launch(args);
