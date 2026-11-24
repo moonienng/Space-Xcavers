@@ -53,7 +53,7 @@ public class InimigoMovimentacao extends Component {
     }
 
     public void aumentarVelocidade() {
-        velocidadeX += 5;
+        velocidadeX += 10;
 
         if (velocidadeX > 100) {
             velocidadeX = 100;
