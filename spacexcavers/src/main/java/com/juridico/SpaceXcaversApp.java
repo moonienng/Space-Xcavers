@@ -102,7 +102,7 @@ public class SpaceXcaversApp extends GameApplication {
 
         getGameWorld().addEntityFactory(new Entidades());
 
-        for (int x = 0; x < 9; x++) {
+        for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 5; y++) {
                 spawn("inimigo", new SpawnData(25 + x * 50, 60 + y * 45));
             }
@@ -123,9 +123,9 @@ public class SpaceXcaversApp extends GameApplication {
         }, Duration.seconds(0.5));
 
         getGameTimer().runAtInterval(() ->{
-            spawn("estrela", new SpawnData(-100, 0));
+            spawn("estrela", new SpawnData(-100, 10));
 
-        }, Duration.seconds(FXGLMath.random(10,15)));
+        }, Duration.seconds(FXGLMath.random(15,25)));
     }
 
     private void fimJogo (String result){
@@ -197,6 +197,24 @@ public class SpaceXcaversApp extends GameApplication {
 
             }
         });
+        //tiros de explodem no ar
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.TIRO_RUIM, Type.TIRO_BOM){
+
+            @Override
+            protected void onCollisionBegin(Entity tiroInimigo, Entity tiroAmigo){
+
+                Point2D centro = tiroInimigo.getCenter();
+                Entity explode = spawn("explosao", new SpawnData(centro.getX(), centro.getY()));
+
+                tiroAmigo.removeFromWorld();
+                tiroInimigo.removeFromWorld();
+
+                getGameTimer().runAtInterval(() -> {
+                    explode.removeFromWorld();
+                },Duration.seconds(0.75));
+            }
+        });
+
 
         //Tiro jogador com entrela
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.ESTRELA, Type.TIRO_BOM) {

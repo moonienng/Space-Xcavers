@@ -15,7 +15,7 @@ import com.almasb.fxgl.physics.HitBox;
 public class Entidades implements EntityFactory
 {
     public enum Type {
-        JOGADOR, INIMIGO, TIRO_BOM, TIRO_RUIM, ESTRELA, ESTRELA_CADENTE, TIRO_MEGA
+        JOGADOR, INIMIGO, TIRO_BOM, TIRO_RUIM, ESTRELA, ESTRELA_CADENTE, TIRO_MEGA, EXPLOSAO
     }    
 
     @Spawns("jogador")
@@ -78,6 +78,17 @@ public class Entidades implements EntityFactory
                 .build();
     }
 
+    @Spawns("explosao")
+    public Entity spawnExplosao(SpawnData data){
+        Texture texture = getAssetLoader().loadTexture("pinguimFrame1.png");
+        texture.setFitHeight(55);
+        texture.setFitWidth(55);
+        texture.setRotate(-180);
+        return entityBuilder(data)
+            .type(Type.EXPLOSAO)
+            .viewWithBBox(texture)
+            .build();
+    }
     @Spawns("tiroJogador")
     public Entity spawnTiroJogador(SpawnData data) {
         return criarTiro(data, Type.TIRO_BOM);
