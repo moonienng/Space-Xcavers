@@ -145,10 +145,17 @@ public class SpaceXcaversApp extends GameApplication {
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.TIRO_BOM, Type.INIMIGO) {
             @Override
             protected void onCollisionBegin(Entity tiro, Entity inimigo) {
+                Point2D centro = inimigo.getCenter();
+                Entity explode = spawn("explosao", new SpawnData(centro.getX(), centro.getY()));
+
                 tiro.removeFromWorld();
                 inimigo.removeFromWorld();
 
                 inc("pontos", 1);
+
+                getGameTimer().runAtInterval(() -> {
+                    explode.removeFromWorld();
+                },Duration.seconds(0.25));
 
                 for (Entity restoInimigos : getGameWorld().getEntitiesByType(Type.INIMIGO)) {
                     restoInimigos.getComponent(InimigoMovimentacao.class).aumentarVelocidade();
@@ -164,7 +171,14 @@ public class SpaceXcaversApp extends GameApplication {
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.TIRO_MEGA, Type.INIMIGO) {
             @Override
             protected void onCollisionBegin(Entity tiro, Entity inimigo) {
+                Point2D centro = tiro.getCenter();
+                Entity explode = spawn("explosao", new SpawnData(centro.getX(), centro.getY()));
+
                 inimigo.removeFromWorld();
+
+                getGameTimer().runAtInterval(() -> {
+                    explode.removeFromWorld();
+                },Duration.seconds(0.25));
 
                 inc("pontos", 1);
 
@@ -211,7 +225,7 @@ public class SpaceXcaversApp extends GameApplication {
 
                 getGameTimer().runAtInterval(() -> {
                     explode.removeFromWorld();
-                },Duration.seconds(0.75));
+                },Duration.seconds(0.25));
             }
         });
 

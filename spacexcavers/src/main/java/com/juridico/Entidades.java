@@ -80,7 +80,7 @@ public class Entidades implements EntityFactory
 
     @Spawns("explosao")
     public Entity spawnExplosao(SpawnData data){
-        Texture texture = getAssetLoader().loadTexture("pinguimFrame1.png");
+        Texture texture = getAssetLoader().loadTexture("explosão.png");
         texture.setFitHeight(55);
         texture.setFitWidth(55);
         texture.setRotate(-180);
