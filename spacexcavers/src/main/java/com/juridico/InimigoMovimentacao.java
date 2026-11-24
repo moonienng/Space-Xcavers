@@ -9,7 +9,7 @@ import static com.almasb.fxgl.dsl.FXGL.getEngineTimer;
 public class InimigoMovimentacao extends Component {
 
     private final double ALTURA_CHAO = 450;
-    private final double passoDescida = 8;
+    private final double passoDescida = 30;
 
     private double velocidadeX = 35;
     private int direcao = 1;
@@ -55,8 +55,8 @@ public class InimigoMovimentacao extends Component {
     public void aumentarVelocidade() {
         velocidadeX += 10;
 
-        if (velocidadeX > 150) {
-            velocidadeX = 150;
+        if (velocidadeX > 300) {
+            velocidadeX = 300;
         }
     }
 }

@@ -236,7 +236,6 @@ public class SpaceXcaversApp extends GameApplication {
 
                 Point2D centro = tiroInimigo.getCenter();
                 Entity explode = spawn("explosao", new SpawnData(centro.getX(), centro.getY()));
-                
                 tiroInimigo.removeFromWorld();
 
                 getGameTimer().runAtInterval(() -> {
