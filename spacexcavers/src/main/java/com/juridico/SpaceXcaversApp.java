@@ -228,6 +228,22 @@ public class SpaceXcaversApp extends GameApplication {
                 },Duration.seconds(0.25));
             }
         });
+        //tiro mega e tido do inimigo se explodem no ar
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(Type.TIRO_RUIM, Type.TIRO_MEGA){
+
+            @Override
+            protected void onCollisionBegin(Entity tiroInimigo, Entity tiroAmigo){
+
+                Point2D centro = tiroInimigo.getCenter();
+                Entity explode = spawn("explosao", new SpawnData(centro.getX(), centro.getY()));
+                
+                tiroInimigo.removeFromWorld();
+
+                getGameTimer().runAtInterval(() -> {
+                    explode.removeFromWorld();
+                },Duration.seconds(0.25));
+            }
+        });
 
 
         //Tiro jogador com entrela
